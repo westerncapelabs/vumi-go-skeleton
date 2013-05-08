@@ -139,10 +139,88 @@ describe("test_vumi_go_skeleton", function() {
             "^Say something please");
     });
 
+    it("second screen should ask if we want to know what we said", function () {
+        var user = {
+            current_state: 'first_state'
+        };
+        tester.check_state(
+            user,
+            "Hello world!",
+            "second_state",
+            "^Thank you! Do you what to know what you said\\?[^]" +
+            "1. Yes[^]"+
+            "2. No$"
+            );
+    });
 
-    // // last test should 
-    it('should go to end when asked for them to say someting', function() {
-        check_state({current_state: 'first_state'}, 'Hello world!',
+    it("Declined to know what we said so say goodbye", function () {
+        var user = {
+            current_state: 'second_state',
+            answers: {
+                first_state: 'Hello world!'
+            }
+        };
+        tester.check_state(
+            user,
+            "2",
+            "end_state",
+            "^Thank you and bye bye!$"
+            );
+    });
+
+    it("Agreed to know what we said so show us", function () {
+        var user = {
+            current_state: 'second_state',
+            answers: {
+                first_state: 'Hello world!'
+            }
+        };
+        tester.check_state(
+            user,
+            "1",
+            "third_state",
+            "^We think you said 'Hello world!'. Correct\\?[^]" +
+            "1. Yes[^]"+
+            "2. No$"
+            );
+    });
+
+    it("Say we got it write and say goodbye", function () {
+        var user = {
+            current_state: 'third_state',
+            answers: {
+                first_state: 'Hello world!',
+                second_state: 'third_state'
+            }
+        };
+        tester.check_state(
+            user,
+            "1",
+            "end_state_correct",
+            "^Aren't we clever\\? Thank you and bye bye!$"
+            );
+    });
+
+    it("Say we got it wrong and say goodbye", function () {
+        var user = {
+            current_state: 'third_state',
+            answers: {
+                first_state: 'Hello world!',
+                second_state: 'third_state'
+            }
+        };
+        tester.check_state(
+            user,
+            "2",
+            "end_state_wrong",
+            "^Silly us! Thank you and bye bye!$"
+            );
+    });
+
+
+    // This is an example of a test that we don't want to run at the moment so we add .skip
+    it.skip('should go to end when asked for them to say someting', function() {
+        check_state({current_state: 'state_we_have_not_made'}, 'Hello world!',
             'end_state', '^Thank you and bye bye!');
     });
 
