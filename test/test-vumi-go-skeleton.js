@@ -20,7 +20,7 @@ describe("test_api", function() {
 
 // YOUR TESTS START HERE
 // CHANGE THIS to test_your_app_name
-describe("test_vumi_go_skeleton", function() {
+describe("When using the skeleton", function() {
 
     // These are used to mock API reponses
     // EXAMPLE: Response from google maps API
@@ -29,30 +29,34 @@ describe("test_vumi_go_skeleton", function() {
     ];
 
     var tester = new vumigo.test_utils.ImTester(app.api, {
-        setup: function (api) {
-            api.config_store.config = JSON.stringify({});
+        custom_setup: function (api) {
+            api.config_store.config = JSON.stringify({
+                //user_store: "go_skeleton"
+            });
             fixtures.forEach(function (f) {
                 api.load_http_fixture(f);
-            })
-        }
+            });
+        },
+        async: true
     });
 
     // first test should always start 'null, null' because we haven't
     // started interacting yet
-    it("first screen should ask us to say something ", function () {
-        tester.check_state({
+    it("first screen should ask us to say something ", function (done) {
+        var p = tester.check_state({
             user: null,
             content: null,
             next_state: "first_state",
             response: "^Say something please"
         });
+        p.then(done, done);
     });
 
-    it("second screen should ask if we want to know what we said", function () {
+    it("second screen should ask if we want to know what we said", function (done) {
         var user = {
             current_state: 'first_state'
         };
-        tester.check_state({
+        var p = tester.check_state({
             user: user,
             content: "Hello world!",
             next_state: "second_state",
@@ -62,32 +66,34 @@ describe("test_vumi_go_skeleton", function() {
                 "2. No$"
             )
         });
+        p.then(done, done);
     });
 
-    it("Declined to know what we said so say goodbye", function () {
+    it("declining to know what we said, should say goodbye", function (done) {
         var user = {
             current_state: 'second_state',
             answers: {
                 first_state: 'Hello world!'
             }
         };
-        tester.check_state({
+        var p = tester.check_state({
             user: user,
             content: "2",
             next_state: "end_state",
             response: "^Thank you and bye bye!$",
             continue_session: false
         });
+        p.then(done, done);
     });
 
-    it("Agreed to know what we said so show us", function () {
+    it("agreeing to know what we said should show us", function (done) {
         var user = {
             current_state: 'second_state',
             answers: {
                 first_state: 'Hello world!'
             }
         };
-        tester.check_state({
+        var p = tester.check_state({
             user: user,
             content: "1",
             next_state: "third_state",
@@ -97,9 +103,10 @@ describe("test_vumi_go_skeleton", function() {
                 "2. No$"
             )
         });
+        p.then(done, done);
     });
 
-    it("Say we got it write and say goodbye", function () {
+    it("told we got it right so say goodbye", function (done) {
         var user = {
             current_state: 'third_state',
             answers: {
@@ -107,16 +114,17 @@ describe("test_vumi_go_skeleton", function() {
                 second_state: 'third_state'
             }
         };
-        tester.check_state({
+        var p = tester.check_state({
             user: user,
             content: "1",
             next_state: "end_state_correct",
             response: "^Aren't we clever\\? Thank you and bye bye!$",
             continue_session: false
         });
+        p.then(done, done);
     });
 
-    it("Say we got it wrong and say goodbye", function () {
+    it("told we got it wrong so say goodbye", function (done) {
         var user = {
             current_state: 'third_state',
             answers: {
@@ -124,20 +132,21 @@ describe("test_vumi_go_skeleton", function() {
                 second_state: 'third_state'
             }
         };
-        tester.check_state({
+        var p = tester.check_state({
             user: user,
             content: "2",
             next_state: "end_state_wrong",
             response: "^Silly us! Thank you and bye bye!$",
             continue_session: false
         });
+        p.then(done, done);
     });
 
 
     // This is an example of a test that we don't want to run at the moment
     // so we add .skip
     it.skip('should go to end when asked for them to say someting', function() {
-        check_state({current_state: 'state_we_have_not_made'}, 'Hello world!',
+        var p = tester.check_state({current_state: 'state_we_have_not_made'}, 'Hello world!',
             'end_state', '^Thank you and bye bye!');
     });
 
